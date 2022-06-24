@@ -16,8 +16,8 @@ contract MultiSig {
     bytes32 public immutable domainSeparator;
 
     constructor(
-        address[] calldata _signers,
-        string calldata _name,
+        address[] memory _signers,
+        string memory _name
     ) {
         unchecked {
             for (uint256 i; i < _signers.length; i++) signers[_signers[i]] = true;
@@ -35,7 +35,7 @@ contract MultiSig {
 		);
     }
     
-    function recoverSignerFromSignature(bytes32 hash, bytes signature)
+    function recoverSignerFromSignature(bytes32 hash, bytes memory _signature)
     internal
     pure
     returns (address)
@@ -44,13 +44,13 @@ contract MultiSig {
         bytes32 s;
         uint8 v;
 
-        if (signature.length != 65) revert InvalidSignatureLength();
+        if (_signature.length != 65) revert InvalidSignatureLength();
 
         // Extract r, s and v values from the signature
         assembly {
-            r := mload(add(signature, 0x20))
-            s := mload(add(signature, 0x40))
-            v := byte(0, mload(add(signature, 0x60)))
+            r := mload(add(_signature, 0x20))
+            s := mload(add(_signature, 0x40))
+            v := byte(0, mload(add(_signature, 0x60)))
         }
 
         if (v < 27) {
@@ -65,12 +65,12 @@ contract MultiSig {
 
     function signMessage(address _to, uint256 _amount, uint256 _nonce)
     public
-    pure
+    view
     returns(bytes32) {
         return keccak256(
             abi.encodePacked(
-                byte(0x19),
-                byte(0x01),
+                bytes1(0x19),
+                bytes1(0x01),
                 domainSeparator,
                 keccak256(
                     abi.encode(
